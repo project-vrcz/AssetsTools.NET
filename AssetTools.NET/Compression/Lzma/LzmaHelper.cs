@@ -15,7 +15,7 @@ public static class LzmaHelper
         var lzmaPath = GetLzmaExePath();
 
         var result = Cli.Wrap(lzmaPath)
-            .WithArguments(["e", "-si", "-so", "-mt64", "-a1", "-fb32"])
+            .WithArguments(["e", "-si", "-so", "-mt8", "-a1", "-mfbt5"])
             .WithStandardInputPipe(PipeSource.FromStream(inStream))
             .WithStandardOutputPipe(PipeTarget.Create((stream, token) =>
                 HandleLzmaCompressStream(stream, outStream, token)))
@@ -69,7 +69,7 @@ public static class LzmaHelper
         var lzmaPath = GetLzmaExePath();
 
         var result = Cli.Wrap(lzmaPath)
-            .WithArguments(["d", "-si", "-so", "-mt64", "-a0"])
+            .WithArguments(["d", "-si", "-so", "-mt8"])
             .WithStandardInputPipe(
                 PipeSource.Create((stream, token) => HandleLzmaDecompressStream(inputStream, stream, outSize, token)))
             .WithStandardOutputPipe(PipeTarget.ToStream(outStream))
