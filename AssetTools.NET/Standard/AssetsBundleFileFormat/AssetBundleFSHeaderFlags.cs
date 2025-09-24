@@ -1,5 +1,8 @@
-﻿namespace AssetsTools.NET
+﻿using System;
+
+namespace AssetsTools.NET
 {
+    [Flags]
     public enum AssetBundleFSHeaderFlags
     {
         None = 0x00,

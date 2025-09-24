@@ -1,13 +1,15 @@
 ﻿using AssetsTools.NET.Extra;
-using AssetsTools.NET.Extra.Decompressors.LZ4;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using EasyCompressor;
 
 namespace AssetsTools.NET
 {
     public class LZ4BlockStream : Stream
     {
+        private readonly LZ4Compressor _lz4Compressor = new LZ4Compressor();
+        
         private readonly long length;
         private readonly long blockSize;
 
@@ -141,12 +143,8 @@ namespace AssetsTools.NET
                     }
                     else if (compressionType == 2 || compressionType == 3)
                     {
-                        byte[] blockData = new byte[blockInfos[blockIndex].DecompressedSize];
-                        using (Lz4DecoderStream decoder = new Lz4DecoderStream(compressedStream))
-                        {
-                            decoder.Read(blockData, 0, blockData.Length);
-                        }
-                        blockStream = new MemoryStream(blockData);
+                        blockStream = new MemoryStream();
+                        _lz4Compressor.Decompress(compressedStream, blockStream);
                     }
                     else
                     {
