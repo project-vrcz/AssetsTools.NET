@@ -81,8 +81,7 @@ namespace AssetsTools.NET.Extra
 
             if (freeOriginalStream)
             {
-                file.Reader.Close();
-                file.DataReader.Close();
+                file.Close();
             }
             return newFile;
         }
