@@ -7,7 +7,6 @@
     <ItemGroup>
         <PackageReference Include="CliWrap" Version="3.9.0" />
         <PackageReference Include="EasyCompressor.LZ4" Version="2.1.0"/>
-        <PackageReference Include="LZMA-SDK" Version="22.1.1"/>
     </ItemGroup>
 
     <ItemGroup>
