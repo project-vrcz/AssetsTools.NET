@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace AssetsTools.NET.Extra
 {
@@ -70,10 +71,10 @@ namespace AssetsTools.NET.Extra
             return files;
         }
 
-        public static AssetBundleFile UnpackBundle(AssetBundleFile file, bool freeOriginalStream = true)
+        public static AssetBundleFile UnpackBundle(AssetBundleFile file, bool freeOriginalStream = true, CancellationToken cancellationToken = default)
         {
             MemoryStream ms = new MemoryStream();
-            file.Unpack(new AssetsFileWriter(ms));
+            file.Unpack(new AssetsFileWriter(ms), cancellationToken);
             ms.Position = 0;
 
             AssetBundleFile newFile = new AssetBundleFile();

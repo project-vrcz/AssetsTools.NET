@@ -10,7 +10,7 @@ namespace AssetsTools.NET.Compression.Lzma;
 
 public static class LzmaHelper
 {
-    public static void Compress(Stream inStream, Stream outStream)
+    public static void Compress(Stream inStream, Stream outStream, CancellationToken cancellationToken = default)
     {
         var lzmaPath = GetLzmaExePath();
 
@@ -20,7 +20,7 @@ public static class LzmaHelper
             .WithStandardOutputPipe(PipeTarget.Create((stream, token) =>
                 HandleLzmaCompressStream(stream, outStream, token)))
             .WithStandardErrorPipe(PipeTarget.ToDelegate(error => { Console.WriteLine(error); }))
-            .ExecuteAsync()
+            .ExecuteAsync(cancellationToken)
             .GetAwaiter().GetResult();
 
         if (!result.IsSuccess)
@@ -62,7 +62,8 @@ public static class LzmaHelper
         }
     }
 
-    public static void Decompress(Stream inStream, Stream outStream, int outSize, int inSize = -1)
+    public static void Decompress(Stream inStream, Stream outStream, int outSize, int inSize = -1,
+        CancellationToken cancellationToken = default)
     {
         var inputStream = inSize == -1 ? inStream : new SegmentStream(inStream, inStream.Position, inSize);
 
@@ -74,14 +75,15 @@ public static class LzmaHelper
                 PipeSource.Create((stream, token) => HandleLzmaDecompressStream(inputStream, stream, outSize, token)))
             .WithStandardOutputPipe(PipeTarget.ToStream(outStream))
             .WithStandardErrorPipe(PipeTarget.ToDelegate(error => { Console.WriteLine(error); }))
-            .ExecuteAsync()
+            .ExecuteAsync(cancellationToken)
             .GetAwaiter().GetResult();
 
         if (!result.IsSuccess)
             throw new Exception("lzma.exe exited with error code " + result.ExitCode);
     }
-    
-    private static async Task HandleLzmaDecompressStream(Stream stream, Stream outStream, int outSize, CancellationToken cts)
+
+    private static async Task HandleLzmaDecompressStream(Stream stream, Stream outStream, int outSize,
+        CancellationToken cts)
     {
         // Read Header
         var headerBuffer = new byte[5].AsMemory();

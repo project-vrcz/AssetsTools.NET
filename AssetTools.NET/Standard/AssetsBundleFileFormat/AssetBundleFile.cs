@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using AssetsTools.NET.Compression.Lzma;
 using K4os.Compression.LZ4;
 
@@ -252,13 +253,16 @@ namespace AssetsTools.NET
         /// You must write to a new file or stream when calling this method.
         /// </summary>
         /// <param name="writer">The writer to use.</param>
-        public void Unpack(AssetsFileWriter writer)
+        /// <param name="cancellationToken">Cancellation Token</param>
+        public void Unpack(AssetsFileWriter writer, CancellationToken cancellationToken = default)
         {
             if (Header == null)
                 throw new InvalidOperationException("Header must be loaded! (Did you forget to call bundle.Read?)");
 
             if (Header.Signature != "UnityFS")
                 throw new NotImplementedException("Non UnityFS bundles are not supported yet.");
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             var fsHeader = Header.FileStreamHeader;
             var reader = DataReader;
@@ -339,6 +343,8 @@ namespace AssetsTools.NET
 
             reader.Position = 0;
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (DataIsCompressed)
             {
                 for (var i = 0; i < newBundleInf.BlockInfos.Length; i++)
@@ -348,13 +354,14 @@ namespace AssetsTools.NET
                     {
                         case 0:
                         {
-                            reader.BaseStream.CopyToCompat(writer.BaseStream, info.CompressedSize);
+                            reader.BaseStream.CopyToCompat(writer.BaseStream, info.CompressedSize,
+                                cancellationToken: cancellationToken);
                             break;
                         }
                         case 1:
                         {
                             LzmaHelper.Decompress(reader.BaseStream, writer.BaseStream, (int)info.DecompressedSize,
-                                (int)info.CompressedSize);
+                                (int)info.CompressedSize, cancellationToken);
                             break;
                         }
                         case 2:
@@ -372,7 +379,8 @@ namespace AssetsTools.NET
                 for (var i = 0; i < newBundleInf.BlockInfos.Length; i++)
                 {
                     var info = blockInfos[i];
-                    reader.BaseStream.CopyToCompat(writer.BaseStream, info.DecompressedSize);
+                    reader.BaseStream.CopyToCompat(writer.BaseStream, info.DecompressedSize,
+                        cancellationToken: cancellationToken);
                 }
             }
         }
@@ -386,7 +394,8 @@ namespace AssetsTools.NET
         /// <param name="blockDirAtEnd">Put block and directory list at end? This skips creating temporary files, but is not officially used.</param>
         /// <param name="progress">Optional callback for compression progress.</param>
         public void Pack(AssetsFileWriter writer, AssetBundleCompressionType compType,
-            bool blockDirAtEnd = true, IAssetBundleCompressProgress progress = null)
+            bool blockDirAtEnd = true, IAssetBundleCompressProgress progress = null,
+            CancellationToken cancellationToken = default)
         {
             if (Header == null)
                 throw new Exception("Header must be loaded! (Did you forget to call bundle.Read?)");
@@ -396,6 +405,8 @@ namespace AssetsTools.NET
 
             if (DataIsCompressed)
                 throw new Exception("Bundles must be decompressed before writing.");
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             Reader.Position = 0;
             writer.Position = 0;
@@ -443,6 +454,8 @@ namespace AssetsTools.NET
 
             var fileDataLength = (int)bundleDataStream.Length;
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             switch (compType)
             {
                 case AssetBundleCompressionType.LZMA:
@@ -456,7 +469,7 @@ namespace AssetsTools.NET
 
                     var writeStreamStart = writeStream.Position;
 
-                    LzmaHelper.Compress(bundleDataStream, writeStream);
+                    LzmaHelper.Compress(bundleDataStream, writeStream, cancellationToken);
 
                     var writeStreamLength = (uint)(writeStream.Position - writeStreamStart);
 
@@ -494,7 +507,7 @@ namespace AssetsTools.NET
                     newBlocks.Add(blockInfo);
 
                     if (blockDirAtEnd)
-                        bundleDataStream.CopyToCompat(writer.BaseStream);
+                        bundleDataStream.CopyToCompat(writer.BaseStream, cancellationToken: cancellationToken);
                     else
                         newStreams.Add(bundleDataStream);
 
@@ -503,6 +516,8 @@ namespace AssetsTools.NET
                 default:
                     throw new NotSupportedException("Only None and LZMA compression are supported for packing.");
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             newBlockAndDirList.BlockInfos = newBlocks.ToArray();
 
@@ -532,7 +547,7 @@ namespace AssetsTools.NET
                 foreach (var newStream in newStreams)
                 {
                     newStream.Position = 0;
-                    newStream.CopyToCompat(writer.BaseStream);
+                    newStream.CopyToCompat(writer.BaseStream, cancellationToken: cancellationToken);
                     newStream.Close();
                 }
             }
