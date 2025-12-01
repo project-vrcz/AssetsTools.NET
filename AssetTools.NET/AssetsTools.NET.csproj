@@ -10,10 +10,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="bin-lzma/arm64/lzma.exe">
+        <None Update="bin-lzma/windows/arm64/lzma.exe">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <None Update="bin-lzma/x64/lzma.exe">
+        <None Update="bin-lzma/windows/x64/lzma.exe">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="bin-lzma/linux/x64/lzma.exe">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

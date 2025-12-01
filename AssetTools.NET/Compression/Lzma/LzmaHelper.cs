@@ -127,10 +127,20 @@ public static class LzmaHelper
             _ => throw new NotSupportedException("Unsupported architecture for lzma.exe")
         };
 
-        var lzmaPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "bin-lzma", arch, "lzma.exe"));
+        var os = GetOs();
+
+        var lzmaPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "bin-lzma", os, arch, "lzma.exe"));
+        Console.WriteLine(lzmaPath);
         if (!File.Exists(lzmaPath))
             throw new FileNotFoundException("lzma.exe not found", lzmaPath);
 
         return lzmaPath;
+    }
+
+    private static string GetOs()
+    {
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "windows" :
+            RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" :
+            throw new NotSupportedException("Unsupported OS for lzma.exe");
     }
 }
