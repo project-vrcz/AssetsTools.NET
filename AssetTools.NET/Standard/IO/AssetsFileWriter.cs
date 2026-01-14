@@ -28,6 +28,11 @@ namespace AssetsTools.NET
         {
         }
         
+        public AssetsFileWriter(Stream stream, bool leaveOpen)
+            : base(stream, Encoding.UTF8, leaveOpen)
+        {
+        }
+        
         public override void Write(short val)
         {
             unchecked
