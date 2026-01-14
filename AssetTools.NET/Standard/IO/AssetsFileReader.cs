@@ -18,6 +18,11 @@ namespace AssetsTools.NET
         {
         }
 
+        public AssetsFileReader(Stream stream, bool leaveOpen)
+            : base(stream, Encoding.UTF8, leaveOpen)
+        {
+        }
+
         public override short ReadInt16()
         {
             unchecked
