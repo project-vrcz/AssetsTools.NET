@@ -14,14 +14,14 @@ namespace AssetsTools.NET.Extra
         /// <param name="path">The path to set on the <see cref="AssetsFileInstance"/>.</param>
         /// <param name="unpackIfPacked">Unpack the bundle if it's compressed?</param>
         /// <returns>The loaded <see cref="BundleFileInstance"/>.</returns>
-        public BundleFileInstance LoadBundleFile(Stream stream, string path, bool unpackIfPacked = true)
+        public BundleFileInstance LoadBundleFile(Stream stream, string path, bool unpackIfPacked = true, bool leaveOpen = false)
         {
             BundleFileInstance bunInst;
             string lookupKey = GetFileLookupKey(path);
             if (BundleLookup.TryGetValue(lookupKey, out bunInst))
                 return bunInst;
 
-            bunInst = new BundleFileInstance(stream, path, unpackIfPacked);
+            bunInst = new BundleFileInstance(stream, path, unpackIfPacked, leaveOpen);
             lock (BundleLookup)
             {
                 lock (Bundles)
