@@ -329,3 +329,6 @@ out/
 build/
 !NativeLibs/**/windows/bin
 !NativeLibs/**/linux/bin
+
+# Visual Studio Code C# Dev Kit
+*.lscache
